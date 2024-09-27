@@ -25,6 +25,9 @@
                         <a href="{{ url_for('clients.clients') }}" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Clients</a>
                         <a href="{{ url_for('tasks.tasks') }}" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Tasks</a>
                         <a href="{{ url_for('settings.settings') }}" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Settings</a>
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="py-4 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300">Admin</a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-3">
