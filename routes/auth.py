@@ -23,27 +23,31 @@ def login():
         password = request.form.get('password')
         logger.debug(f"Login attempt for email: {email}")
         
-        user = User.query.filter_by(email=email).first()
-        if user is None:
-            logger.debug(f"User with email {email} not found")
-            flash('Invalid email or password')
-            return render_template('login.html')
-        
-        logger.debug(f"User found: {user.username}")
-        
-        if user.check_password(password):
-            logger.debug("Password check successful")
-            otp = generate_otp()
-            user.otp = otp
-            user.otp_valid_until = datetime.utcnow() + timedelta(minutes=5)
-            db.session.commit()
-            logger.debug(f"OTP generated for user: {otp}")
-            # Instead of sending email, we'll print the OTP for testing purposes
-            print(f"OTP for {user.email}: {otp}")
-            return redirect(url_for('auth.verify_otp', user_id=user.id))
-        else:
-            logger.debug("Password check failed")
-            flash('Invalid email or password')
+        try:
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                logger.debug(f"User with email {email} not found")
+                flash('Invalid email or password')
+                return render_template('login.html')
+            
+            logger.debug(f"User found: {user.username}")
+            
+            if user.check_password(password):
+                logger.debug("Password check successful")
+                otp = generate_otp()
+                user.otp = otp
+                user.otp_valid_until = datetime.utcnow() + timedelta(minutes=5)
+                db.session.commit()
+                logger.debug(f"OTP generated for user: {otp}")
+                # Instead of sending email, we'll print the OTP for testing purposes
+                print(f"OTP for {user.email}: {otp}")
+                return redirect(url_for('auth.verify_otp', user_id=user.id))
+            else:
+                logger.debug("Password check failed")
+                flash('Invalid email or password')
+        except Exception as e:
+            logger.error(f"Error during login process: {str(e)}")
+            flash('An error occurred during login. Please try again.')
     
     return render_template('login.html')
 
