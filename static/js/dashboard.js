@@ -1,26 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Fetch client data and create charts
-    fetch('/api/clients')
+    fetch('/api/client_stats')
         .then(response => response.json())
         .then(data => {
-            createStatusChart(data);
-            createEmailsChart(data);
+            createStatusChart(data.status_data);
+            createEmailsChart(data.email_data);
         });
 });
 
-function createStatusChart(clients) {
-    const statusCounts = {};
-    clients.forEach(client => {
-        statusCounts[client.status] = (statusCounts[client.status] || 0) + 1;
-    });
-
+function createStatusChart(statusData) {
     const ctx = document.getElementById('statusChart').getContext('2d');
     new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: Object.keys(statusCounts),
+            labels: Object.keys(statusData),
             datasets: [{
-                data: Object.values(statusCounts),
+                data: Object.values(statusData),
                 backgroundColor: [
                     '#FF6384',
                     '#36A2EB',
@@ -40,19 +34,14 @@ function createStatusChart(clients) {
     });
 }
 
-function createEmailsChart(clients) {
-    const emailCounts = {
-        'With Email': clients.filter(client => client.email).length,
-        'Without Email': clients.filter(client => !client.email).length
-    };
-
+function createEmailsChart(emailData) {
     const ctx = document.getElementById('emailsChart').getContext('2d');
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(emailCounts),
+            labels: Object.keys(emailData),
             datasets: [{
-                data: Object.values(emailCounts),
+                data: Object.values(emailData),
                 backgroundColor: [
                     '#36A2EB',
                     '#FF6384'

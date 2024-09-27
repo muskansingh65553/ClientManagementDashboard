@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Client{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl font-bold mb-4">Edit Client</h1>
+    <form method="POST" action="{{ url_for('clients.edit_client', client_id=client.id) }}" class="max-w-lg">
+        <div class="mb-4">
+            <label for="company_name" class="block text-gray-700 font-bold mb-2">Company Name</label>
+            <input type="text" id="company_name" name="company_name" value="{{ client.company_name }}" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="contact_name" class="block text-gray-700 font-bold mb-2">Contact Name</label>
+            <input type="text" id="contact_name" name="contact_name" value="{{ client.contact_name }}" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
+            <input type="email" id="email" name="email" value="{{ client.email }}" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="phone" class="block text-gray-700 font-bold mb-2">Phone</label>
+            <input type="tel" id="phone" name="phone" value="{{ client.phone }}" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="status" class="block text-gray-700 font-bold mb-2">Status</label>
+            <select id="status" name="status" required class="w-full px-3 py-2 border rounded-lg">
+                <option value="Lead" {% if client.status == 'Lead' %}selected{% endif %}>Lead</option>
+                <option value="Prospect" {% if client.status == 'Prospect' %}selected{% endif %}>Prospect</option>
+                <option value="Customer" {% if client.status == 'Customer' %}selected{% endif %}>Customer</option>
+            </select>
+        </div>
+        <div class="flex items-center justify-between">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Update Client
+            </button>
+            <a href="{{ url_for('clients.clients') }}" class="text-blue-500 hover:text-blue-700">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

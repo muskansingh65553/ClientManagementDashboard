@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-2">Total Clients</h2>
+            <p class="text-3xl font-bold">{{ total_clients }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-2">Clients with Email</h2>
+            <p class="text-3xl font-bold">{{ total_emails }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-2">Clients with Phone</h2>
+            <p class="text-3xl font-bold">{{ total_phones }}</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-2">Lead Statuses</h2>
+            <ul>
+                {% for status in lead_statuses %}
+                <li>{{ status[0] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Client Status Distribution</h2>
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Clients with/without Email</h2>
+            <canvas id="emailsChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="bg-white p-4 rounded-lg shadow mb-8">
+        <h2 class="text-xl font-semibold mb-4">Recent Tasks</h2>
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="text-left">Title</th>
+                    <th class="text-left">Due Date</th>
+                    <th class="text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.due_date }}</td>
+                    <td>{{ task.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

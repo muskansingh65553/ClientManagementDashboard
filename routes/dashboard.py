@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy import func
 from models import Client, Task
+from app import db
 
 bp = Blueprint('dashboard', __name__)
 
@@ -20,3 +22,19 @@ def index():
                            total_phones=total_phones,
                            lead_statuses=lead_statuses,
                            tasks=tasks)
+
+@bp.route('/api/client_stats')
+@login_required
+def client_stats():
+    status_counts = db.session.query(Client.status, func.count(Client.id)).filter_by(user_id=current_user.id).group_by(Client.status).all()
+    status_data = {status: count for status, count in status_counts}
+    
+    email_counts = {
+        'With Email': Client.query.filter_by(user_id=current_user.id).filter(Client.email != None).count(),
+        'Without Email': Client.query.filter_by(user_id=current_user.id).filter(Client.email == None).count()
+    }
+    
+    return jsonify({
+        'status_data': status_data,
+        'email_data': email_counts
+    })

@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addTaskForm.addEventListener('submit', addTask);
     }
 
-    const taskList = document.getElementById('taskList');
-    if (taskList) {
-        taskList.addEventListener('change', updateTaskStatus);
+    const taskTable = document.getElementById('taskTable');
+    if (taskTable) {
+        taskTable.addEventListener('change', updateTaskStatus);
     }
 });
 
@@ -18,8 +18,10 @@ function addTask(event) {
     fetch('/add_task', {
         method: 'POST',
         body: formData
-    }).then(response => {
-        if (response.ok) {
+    }).then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
             location.reload();
         } else {
             showNotification('Error adding task', 'error');
@@ -28,7 +30,7 @@ function addTask(event) {
 }
 
 function updateTaskStatus(event) {
-    if (event.target.tagName === 'SELECT') {
+    if (event.target.classList.contains('task-status')) {
         const taskId = event.target.dataset.taskId;
         const newStatus = event.target.value;
 
@@ -36,12 +38,12 @@ function updateTaskStatus(event) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': getCookie('csrf_token')
             },
             body: `status=${newStatus}`
-        }).then(response => {
-            if (response.ok) {
-                showNotification('Task status updated', 'info');
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
             } else {
                 showNotification('Error updating task status', 'error');
             }
@@ -53,22 +55,14 @@ function deleteTask(taskId) {
     if (confirm('Are you sure you want to delete this task?')) {
         fetch(`/delete_task/${taskId}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrf_token')
-            }
-        }).then(response => {
-            if (response.ok) {
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
                 location.reload();
             } else {
                 showNotification('Error deleting task', 'error');
             }
         });
     }
-}
-
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
 }

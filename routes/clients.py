@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_required, current_user
 from app import db
 from models import Client
@@ -27,6 +27,7 @@ def add_client():
         db.session.add(new_client)
         db.session.commit()
         
+        flash('Client added successfully', 'success')
         return redirect(url_for('clients.clients'))
     
     return render_template('add_client.html')
@@ -36,7 +37,8 @@ def add_client():
 def edit_client(client_id):
     client = Client.query.get_or_404(client_id)
     if client.user_id != current_user.id:
-        return jsonify({"error": "Unauthorized"}), 403
+        flash('You do not have permission to edit this client', 'error')
+        return redirect(url_for('clients.clients'))
     
     if request.method == 'POST':
         client.company_name = request.form.get('company_name')
@@ -45,6 +47,7 @@ def edit_client(client_id):
         client.phone = request.form.get('phone')
         client.status = request.form.get('status')
         db.session.commit()
+        flash('Client updated successfully', 'success')
         return redirect(url_for('clients.clients'))
     
     return render_template('edit_client.html', client=client)
@@ -54,11 +57,11 @@ def edit_client(client_id):
 def delete_client(client_id):
     client = Client.query.get_or_404(client_id)
     if client.user_id != current_user.id:
-        return jsonify({"error": "Unauthorized"}), 403
+        return jsonify({"error": "You do not have permission to delete this client"}), 403
     
     db.session.delete(client)
     db.session.commit()
-    return redirect(url_for('clients.clients'))
+    return jsonify({"success": True, "message": "Client deleted successfully"})
 
 @bp.route('/api/clients')
 @login_required

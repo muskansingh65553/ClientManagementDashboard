@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl font-bold mb-4">Tasks</h1>
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold mb-2">Add New Task</h2>
+        <form id="addTaskForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                    Title
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="title" name="title" type="text" placeholder="Task title" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                    Description
+                </label>
+                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="description" name="description" placeholder="Task description"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="due_date">
+                    Due Date
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="due_date" name="due_date" type="date" required>
+            </div>
+            <div class="flex items-center justify-between">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    Add Task
+                </button>
+            </div>
+        </form>
+    </div>
+    <div>
+        <h2 class="text-xl font-semibold mb-2">Task List</h2>
+        <table id="taskTable" class="min-w-full bg-white">
+            <thead>
+                <tr>
+                    <th class="py-2 px-4 border-b">Title</th>
+                    <th class="py-2 px-4 border-b">Description</th>
+                    <th class="py-2 px-4 border-b">Due Date</th>
+                    <th class="py-2 px-4 border-b">Status</th>
+                    <th class="py-2 px-4 border-b">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td class="py-2 px-4 border-b">{{ task.title }}</td>
+                    <td class="py-2 px-4 border-b">{{ task.description }}</td>
+                    <td class="py-2 px-4 border-b">{{ task.due_date }}</td>
+                    <td class="py-2 px-4 border-b">
+                        <select class="task-status" data-task-id="{{ task.id }}">
+                            <option value="Not Started" {% if task.status == 'Not Started' %}selected{% endif %}>Not Started</option>
+                            <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </td>
+                    <td class="py-2 px-4 border-b">
+                        <button onclick="deleteTask({{ task.id }})" class="text-red-500 hover:text-red-700">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
