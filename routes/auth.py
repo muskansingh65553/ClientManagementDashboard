@@ -49,20 +49,30 @@ def login():
 
 @bp.route('/verify_otp/<int:user_id>', methods=['GET', 'POST'])
 def verify_otp(user_id):
-    user = User.query.get(user_id)
-    if request.method == 'POST':
-        otp = request.form.get('otp')
-        logger.debug(f"OTP verification attempt for user: {user.username}")
-        if user and user.otp == otp and user.otp_valid_until > datetime.utcnow():
-            login_user(user)
-            user.otp = None
-            user.otp_valid_until = None
-            db.session.commit()
-            logger.debug(f"OTP verification successful for user: {user.username}")
-            return redirect(url_for('dashboard.index'))
-        logger.debug(f"OTP verification failed for user: {user.username}")
-        flash('Invalid or expired OTP')
-    return render_template('otp.html', user_id=user_id)
+    try:
+        user = User.query.get(user_id)
+        if user is None:
+            logger.error(f"User with id {user_id} not found")
+            flash('Invalid user')
+            return redirect(url_for('auth.login'))
+
+        if request.method == 'POST':
+            otp = request.form.get('otp')
+            logger.debug(f"OTP verification attempt for user: {user.username}")
+            if user.otp == otp and user.otp_valid_until > datetime.utcnow():
+                login_user(user)
+                user.otp = None
+                user.otp_valid_until = None
+                db.session.commit()
+                logger.debug(f"OTP verification successful for user: {user.username}")
+                return redirect(url_for('dashboard.index'))
+            logger.debug(f"OTP verification failed for user: {user.username}")
+            flash('Invalid or expired OTP')
+        return render_template('otp.html', user_id=user_id)
+    except Exception as e:
+        logger.error(f"Error in verify_otp: {str(e)}")
+        flash('An error occurred. Please try again.')
+        return redirect(url_for('auth.login'))
 
 @bp.route('/logout')
 @login_required
