@@ -23,18 +23,28 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         logger.debug(f"Login attempt for email: {email}")
+        
         user = User.query.filter_by(email=email).first()
-        logger.debug(f"User found: {user is not None}")
-        if user and user.check_password(password):
+        if user is None:
+            logger.debug(f"User with email {email} not found")
+            flash('Invalid email or password')
+            return render_template('login.html')
+        
+        logger.debug(f"User found: {user.username}")
+        
+        if user.check_password(password):
             logger.debug("Password check successful")
             otp = generate_otp()
             user.otp = otp
             user.otp_valid_until = datetime.utcnow() + timedelta(minutes=5)
             db.session.commit()
             send_otp_email(user.email, otp)
+            logger.debug(f"OTP sent to {user.email}")
             return redirect(url_for('auth.verify_otp', user_id=user.id))
-        logger.debug("Login failed: Invalid email or password")
-        flash('Invalid email or password')
+        else:
+            logger.debug("Password check failed")
+            flash('Invalid email or password')
+    
     return render_template('login.html')
 
 @bp.route('/verify_otp/<int:user_id>', methods=['GET', 'POST'])
@@ -42,18 +52,22 @@ def verify_otp(user_id):
     user = User.query.get(user_id)
     if request.method == 'POST':
         otp = request.form.get('otp')
+        logger.debug(f"OTP verification attempt for user: {user.username}")
         if user and user.otp == otp and user.otp_valid_until > datetime.utcnow():
             login_user(user)
             user.otp = None
             user.otp_valid_until = None
             db.session.commit()
+            logger.debug(f"OTP verification successful for user: {user.username}")
             return redirect(url_for('dashboard.index'))
+        logger.debug(f"OTP verification failed for user: {user.username}")
         flash('Invalid or expired OTP')
     return render_template('otp.html', user_id=user_id)
 
 @bp.route('/logout')
 @login_required
 def logout():
+    logger.debug(f"Logout attempt for user: {current_user.username}")
     logout_user()
     return redirect(url_for('auth.login'))
 
@@ -64,11 +78,20 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         
+        logger.debug(f"Registration attempt - Username: {username}, Email: {email}")
+        
+        if not username or not email or not password:
+            logger.debug("Registration failed: Missing required fields")
+            flash('All fields are required')
+            return redirect(url_for('auth.register'))
+        
         if User.query.filter_by(username=username).first():
+            logger.debug(f"Registration failed: Username '{username}' already exists")
             flash('Username already exists')
             return redirect(url_for('auth.register'))
         
         if User.query.filter_by(email=email).first():
+            logger.debug(f"Registration failed: Email '{email}' already exists")
             flash('Email already exists')
             return redirect(url_for('auth.register'))
         
@@ -78,17 +101,17 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             
+            logger.debug(f"Registration successful for user: {username}")
             flash('Registration successful. Please log in.')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error during registration: {str(e)}")
-            flash(f'An error occurred during registration. Please try again.')
+            flash('An error occurred during registration. Please try again.')
             return redirect(url_for('auth.register'))
     
     return render_template('register.html')
 
-# Add default user
 def create_default_user():
     default_email = "kashya.me18@gmail.com"
     default_password = "Kashyap18@"
@@ -99,15 +122,11 @@ def create_default_user():
             default_user.set_password(default_password)
             db.session.add(default_user)
             db.session.commit()
-            print("Default user created successfully.")
             logger.info("Default user created successfully.")
         except Exception as e:
             db.session.rollback()
-            print(f"Error creating default user: {str(e)}")
             logger.error(f"Error creating default user: {str(e)}")
     else:
-        print("Default user already exists.")
         logger.info("Default user already exists.")
 
-# Call this function when initializing the app
 create_default_user()

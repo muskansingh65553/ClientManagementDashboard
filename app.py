@@ -14,21 +14,19 @@ def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
     app.config["SECRET_KEY"] = os.urandom(24)
-    
+
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
-    from routes import auth, clients, dashboard, settings, tasks
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(clients.bp)
-    app.register_blueprint(dashboard.bp)
-    app.register_blueprint(settings.bp)
-    app.register_blueprint(tasks.bp)
-
     with app.app_context():
+        from routes import auth, clients, dashboard, settings, tasks
+        app.register_blueprint(auth.bp)
+        app.register_blueprint(clients.bp)
+        app.register_blueprint(dashboard.bp)
+        app.register_blueprint(settings.bp)
+        app.register_blueprint(tasks.bp)
+
         db.create_all()
-        from routes.auth import create_default_user
-        create_default_user()
 
     return app
