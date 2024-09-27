@@ -64,12 +64,34 @@ def register():
             flash('Email already exists')
             return redirect(url_for('auth.register'))
         
-        new_user = User(username=username, email=email)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Registration successful. Please log in.')
-        return redirect(url_for('auth.login'))
+        try:
+            new_user = User(username=username, email=email)
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.commit()
+            
+            flash('Registration successful. Please log in.')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred during registration: {str(e)}')
+            return redirect(url_for('auth.register'))
     
     return render_template('register.html')
+
+# Add default user
+def create_default_user():
+    default_email = "kashya.me18@gmail.com"
+    default_password = "Kashyap18@"
+    
+    if not User.query.filter_by(email=default_email).first():
+        default_user = User(username="default_user", email=default_email)
+        default_user.set_password(default_password)
+        db.session.add(default_user)
+        db.session.commit()
+        print("Default user created successfully.")
+    else:
+        print("Default user already exists.")
+
+# Call this function when initializing the app
+create_default_user()

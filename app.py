@@ -28,5 +28,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        from routes.auth import create_default_user
+        create_default_user()
 
     return app
