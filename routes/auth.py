@@ -6,8 +6,12 @@ from models import User
 from utils.email import send_otp_email
 from utils.helpers import generate_otp
 from datetime import datetime, timedelta
+import logging
 
 bp = Blueprint('auth', __name__)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -18,14 +22,18 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        logger.debug(f"Login attempt for email: {email}")
         user = User.query.filter_by(email=email).first()
+        logger.debug(f"User found: {user is not None}")
         if user and user.check_password(password):
+            logger.debug("Password check successful")
             otp = generate_otp()
             user.otp = otp
             user.otp_valid_until = datetime.utcnow() + timedelta(minutes=5)
             db.session.commit()
             send_otp_email(user.email, otp)
             return redirect(url_for('auth.verify_otp', user_id=user.id))
+        logger.debug("Login failed: Invalid email or password")
         flash('Invalid email or password')
     return render_template('login.html')
 
@@ -74,7 +82,8 @@ def register():
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
-            flash(f'An error occurred during registration: {str(e)}')
+            logger.error(f"Error during registration: {str(e)}")
+            flash(f'An error occurred during registration. Please try again.')
             return redirect(url_for('auth.register'))
     
     return render_template('register.html')
@@ -85,13 +94,20 @@ def create_default_user():
     default_password = "Kashyap18@"
     
     if not User.query.filter_by(email=default_email).first():
-        default_user = User(username="default_user", email=default_email)
-        default_user.set_password(default_password)
-        db.session.add(default_user)
-        db.session.commit()
-        print("Default user created successfully.")
+        try:
+            default_user = User(username="default_user", email=default_email)
+            default_user.set_password(default_password)
+            db.session.add(default_user)
+            db.session.commit()
+            print("Default user created successfully.")
+            logger.info("Default user created successfully.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating default user: {str(e)}")
+            logger.error(f"Error creating default user: {str(e)}")
     else:
         print("Default user already exists.")
+        logger.info("Default user already exists.")
 
 # Call this function when initializing the app
 create_default_user()
