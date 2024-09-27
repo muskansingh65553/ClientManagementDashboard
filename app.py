@@ -3,6 +3,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
+from apscheduler.schedulers.background import BackgroundScheduler
+from reminders import check_and_send_reminders
 
 class Base(DeclarativeBase):
     pass
@@ -28,5 +30,10 @@ def create_app():
         app.register_blueprint(tasks.bp)
 
         db.create_all()
+
+        # Set up the scheduler
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(func=check_and_send_reminders, trigger="interval", hours=24)
+        scheduler.start()
 
     return app
