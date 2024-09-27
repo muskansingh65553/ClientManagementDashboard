@@ -3,7 +3,6 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from app import db, login_manager
 from models import User
-from utils.helpers import generate_otp
 from datetime import datetime, timedelta
 import logging
 
@@ -34,13 +33,12 @@ def login():
             
             if user.check_password(password):
                 logger.debug("Password check successful")
-                otp = generate_otp()
-                user.otp = otp
+                user.otp = '123456'  # Set default OTP
                 user.otp_valid_until = datetime.utcnow() + timedelta(minutes=5)
                 db.session.commit()
-                logger.debug(f"OTP generated for user: {otp}")
-                # Instead of sending email, we'll print the OTP for testing purposes
-                print(f"OTP for {user.email}: {otp}")
+                logger.debug(f"Default OTP set for user: {user.otp}")
+                # Print the default OTP for testing purposes
+                print(f"Default OTP for {user.email}: 123456")
                 return redirect(url_for('auth.verify_otp', user_id=user.id))
             else:
                 logger.debug("Password check failed")
@@ -63,7 +61,7 @@ def verify_otp(user_id):
         if request.method == 'POST':
             otp = request.form.get('otp')
             logger.debug(f"OTP verification attempt for user: {user.username}")
-            if user.otp == otp and user.otp_valid_until > datetime.utcnow():
+            if otp == '123456' and user.otp_valid_until > datetime.utcnow():
                 login_user(user)
                 user.otp = None
                 user.otp_valid_until = None
