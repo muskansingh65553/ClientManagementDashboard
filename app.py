@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from sqlalchemy.orm import DeclarativeBase
 from apscheduler.schedulers.background import BackgroundScheduler
-from reminders import check_and_send_reminders
 from models import ActivityLog
 
 class Base(DeclarativeBase):
@@ -13,9 +12,18 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
+def get_database_url():
+    # Use hardcoded database connection details
+    host = "localhost"  # DB_HOST
+    port = "5432"       # DB_PORT
+    user = "postgres"   # DB_USER
+    password = "admin"  # DB_PASSWORD
+    database = "crm"    # DB_NAME
+    return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+
 def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
     app.config["SECRET_KEY"] = os.urandom(24)
 
     db.init_app(app)
@@ -43,6 +51,8 @@ def create_app():
 
         db.create_all()
 
+        # Move the import here
+        from reminders import check_and_send_reminders
         # Set up the scheduler
         scheduler = BackgroundScheduler()
         scheduler.add_job(func=check_and_send_reminders, trigger="interval", hours=24)

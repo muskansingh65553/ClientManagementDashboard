@@ -32,11 +32,11 @@
         </div>
         <div class="mb-4">
             <label for="reminder_date" class="block text-gray-700 font-bold mb-2">Reminder Date</label>
-            <input type="date" id="reminder_date" name="reminder_date" value="{{ client.reminder_date.isoformat() if client.reminder_date else '' }}" class="w-full px-3 py-2 border rounded-lg">
+            <input type="date" id="reminder_date" name="reminder_date" class="w-full px-3 py-2 border rounded-lg">
         </div>
         <div class="mb-4">
             <label for="reminder_message" class="block text-gray-700 font-bold mb-2">Reminder Message</label>
-            <textarea id="reminder_message" name="reminder_message" class="w-full px-3 py-2 border rounded-lg">{{ client.reminder_message }}</textarea>
+            <textarea id="reminder_message" name="reminder_message" class="w-full px-3 py-2 border rounded-lg"></textarea>
         </div>
         <div class="flex items-center justify-between">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">

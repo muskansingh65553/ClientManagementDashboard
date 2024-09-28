@@ -26,9 +26,6 @@ class Client(db.Model):
     phone = db.Column(db.String(20))
     status = db.Column(db.String(20))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    reminder_date = db.Column(db.Date)
-    reminder_message = db.Column(db.Text)
-    last_reminder_sent = db.Column(db.DateTime)
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
